@@ -44,6 +44,13 @@ async function run() {
             const orders = await ordersCollection.find(query).toArray();
             res.send(orders);
         })
+          //delete order
+          app.delete('/orders/:id',async (req,res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await ordersCollection.deleteOne(query);
+            res.send(result);
+        })
         //get selected product for payment
         app.get('/orders/:id',verifyJWT, async (req, res) => {
             const id = req.params.id;
@@ -121,7 +128,7 @@ async function run() {
             }
             const result = await userCollection.updateOne(filter, updateDoc, options)
             const accessToken = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '1d',
+                expiresIn: '6d',
             })
             res.send({ result, accessToken });
         })
