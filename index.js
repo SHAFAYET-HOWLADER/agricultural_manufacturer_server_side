@@ -38,6 +38,13 @@ async function run() {
         const userCollection = client.db("toolsProducer").collection("users");
         const ordersCollection = client.db("toolsProducer").collection("orders");
         const paymentCollection = client.db("toolsProducer").collection("payment");
+        const reviewsCollection = client.db("toolsProducer").collection("reviews");
+        //find reviews collection from db
+        app.get('/reviews', async (req,res)=>{
+          const query = {};
+          const result = await reviewsCollection.find(query).toArray();
+          res.send(result)
+        })
         app.get('/orders', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
@@ -57,7 +64,6 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const order = await ordersCollection.findOne(query);
             res.send(order)
-
         })
         //post user's orders information
         app.post('/orders', async (req, res) => {
@@ -115,6 +121,12 @@ async function run() {
             const query = {};
             const cursor = toolsCollection.find(query);
             const result = await cursor.toArray();
+            res.send(result);
+        })
+        //review post
+        app.post('/review', verifyJWT, async (req,res)=>{
+            const newReview = req.body;
+            const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
         })
         //create user using put method
