@@ -47,7 +47,7 @@ async function run() {
             res.send(profile);
         })
         //find reviews collection from db
-        app.get('/profile', verifyJWT, async (req, res) => {
+        app.get('/profile', async (req, res) => {
             const query = {};
             const result = await profileCollection.find(query).toArray();
             res.send(result)
@@ -71,18 +71,11 @@ async function run() {
             const result = await reviewsCollection.find(query).toArray();
             res.send(result)
         })
-        app.get('/orders', verifyJWT, async (req, res) => {
+        app.get('/orders', async (req, res) => {
             const email = req.query.email;
-            const decodedEmail = req.decoded.email;
-            if (email === decodedEmail) {
-                const query = { email: email }
-                const orders = await ordersCollection.find(query).toArray();
-                return res.send(orders);
-            }
-            else {
-                return res.status(403).send({ message: 'forbidden access' })
-            }
-
+            const query = { email: email }
+            const orders = await ordersCollection.find(query).toArray();
+            res.send(orders);
         })
         //delete order
         app.delete('/orders/:id', async (req, res) => {
@@ -92,7 +85,7 @@ async function run() {
             res.send(result);
         })
         //get selected product for payment
-        app.get('/orders/:id', verifyJWT, async (req, res) => {
+        app.get('/orders/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const order = await ordersCollection.findOne(query);
@@ -122,7 +115,7 @@ async function run() {
             res.send(tool);
         })
         //paymentIntent
-        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+        app.post('/create-payment-intent', async (req, res) => {
             const product = req.body;
             const price = product.price;
             const amount = price * 100;
@@ -135,7 +128,7 @@ async function run() {
                 clientSecret: paymentIntent.client_secret
             })
         })
-        app.patch('/orders/:id', verifyJWT, async (req, res) => {
+        app.patch('/orders/:id', async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
             const filter = { _id: ObjectId(id) };
@@ -174,7 +167,7 @@ async function run() {
             res.send(users);
         })
         //make admin route
-        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+        app.put('/user/admin/:email', async (req, res) => {
             const email = req.params.email;
             const requester = req.decoded.email;
             const requesterAccount = await userCollection.findOne({ email: requester });
@@ -186,8 +179,8 @@ async function run() {
                 const result = await userCollection.updateOne(filter, updateDoc)
                 res.send(result);
             }
-            else{
-                res.status(403).send({message: 'forbidden'})
+            else {
+                res.status(403).send({ message: 'forbidden' })
             }
 
         })
