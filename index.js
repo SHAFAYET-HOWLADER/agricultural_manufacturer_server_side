@@ -53,15 +53,14 @@ async function run() {
             res.send(result)
         })
         //update profile
-        app.put('/profile/:id', async (req, res) => {
-            const id = req.params.email;
+        app.put('/profile/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log(email)
             const updatedProfile = req.body;
-            const filter = {_id: ObjectId(id)};
+            const filter = {email:email};
             const options = { upsert: true };
             const updatedDoc = {
-                $set: {
-                    updatedProfile,
-                }
+                $set: updatedProfile,
             };
             const result = await profileCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
