@@ -57,7 +57,7 @@ async function run() {
             const email = req.params.email;
             console.log(email)
             const updatedProfile = req.body;
-            const filter = {email:email};
+            const filter = { email: email };
             const options = { upsert: true };
             const updatedDoc = {
                 $set: updatedProfile,
@@ -66,16 +66,23 @@ async function run() {
             res.send(result);
         })
         //find reviews collection from db
-        app.get('/reviews', verifyJWT, async (req, res) => {
+        app.get('/reviews', async (req, res) => {
             const query = {};
             const result = await reviewsCollection.find(query).toArray();
             res.send(result)
         })
         app.get('/orders', verifyJWT, async (req, res) => {
             const email = req.query.email;
-            const query = { email: email }
-            const orders = await ordersCollection.find(query).toArray();
-            res.send(orders);
+            const decodedEmail = req.decoded.email;
+            if (email === decodedEmail) {
+                const query = { email: email }
+                const orders = await ordersCollection.find(query).toArray();
+                return res.send(orders);
+            }
+            else {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
         })
         //delete order
         app.delete('/orders/:id', async (req, res) => {
@@ -149,11 +156,40 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+        //post tools in db 
+        app.post('/tools', async (req, res) => {
+            const newTools = req.body;
+            const result = await toolsCollection.insertOne(newTools);
+            res.send(result);
+        })
         //review post
-        app.post('/review', verifyJWT, async (req, res) => {
+        app.post('/review', async (req, res) => {
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
+        })
+        //get all user
+        app.get('/user', async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        })
+        //make admin route
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                }
+                const result = await userCollection.updateOne(filter, updateDoc)
+                res.send(result);
+            }
+            else{
+                res.status(403).send({message: 'forbidden'})
+            }
+
         })
         //create user using put method
         app.put('/user/:email', async (req, res) => {
