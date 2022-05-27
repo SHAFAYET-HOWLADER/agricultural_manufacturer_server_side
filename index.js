@@ -1,4 +1,5 @@
 const express = require("express");
+
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -10,7 +11,7 @@ const jwt = require('jsonwebtoken');
 app.use(cors({origin:'https://final-project-13085.web.app'}));
 app.use(express.json());
 app.get('/', (req, res) => {
-    res.send('hello world ! ');
+    res.send('hello worlds ! ');
 })
 const uri = `mongodb+srv://${process.env.toolsUser}:${process.env.toolsPass}@cluster0.ipzen.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
