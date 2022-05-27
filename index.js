@@ -7,8 +7,6 @@ const app = express();
 const port = process.env.PORT || 5000;
 const jwt = require('jsonwebtoken');
 //---------middleware------------//
-//user=dbUser
-//pass=BfMewB4I9ZLigoJ1
 app.use(cors());
 app.use(express.json());
 app.get('/', (req, res) => {
@@ -16,6 +14,7 @@ app.get('/', (req, res) => {
 })
 const uri = `mongodb+srv://${process.env.toolsUser}:${process.env.toolsPass}@cluster0.ipzen.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 //---------------verify jwt----------------//
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -40,6 +39,18 @@ async function run() {
         const paymentCollection = client.db("toolsProducer").collection("payment");
         const reviewsCollection = client.db("toolsProducer").collection("reviews");
         const profileCollection = client.db("toolsProducer").collection("profile");
+        //---------------verify admin----------------//
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                next();
+            }
+
+            else {
+                res.status(403).send({ message: 'forbidden' })
+            }
+        }
         //post profile info in db
         app.post('/profile', async (req, res) => {
             const userInfo = req.body;
@@ -55,7 +66,6 @@ async function run() {
         //update profile
         app.put('/profile/:email', async (req, res) => {
             const email = req.params.email;
-            console.log(email)
             const updatedProfile = req.body;
             const filter = { email: email };
             const options = { upsert: true };
@@ -70,12 +80,6 @@ async function run() {
             const query = {};
             const result = await reviewsCollection.find(query).toArray();
             res.send(result)
-        })
-        app.get('/orders', async (req, res) => {
-            const email = req.query.email;
-            const query = { email: email }
-            const orders = await ordersCollection.find(query).toArray();
-            res.send(orders);
         })
         //delete order
         app.delete('/orders/:id', async (req, res) => {
@@ -149,8 +153,15 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+        //get all orders
+        app.get('/orders', async (req, res) => {
+            const query = {};
+            const cursor = ordersCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
         //post tools in db 
-        app.post('/tools', async (req, res) => {
+        app.post('/tools',async (req, res) => {
             const newTools = req.body;
             const result = await toolsCollection.insertOne(newTools);
             res.send(result);
@@ -166,23 +177,21 @@ async function run() {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
-        //make admin route
-        app.put('/user/admin/:email', async (req, res) => {
+        app.get('/admin/:email',async (req,res)=>{
             const email = req.params.email;
-            const requester = req.decoded.email;
-            const requesterAccount = await userCollection.findOne({ email: requester });
-            if (requesterAccount.role === 'admin') {
-                const filter = { email: email };
-                const updateDoc = {
-                    $set: { role: 'admin' },
-                }
-                const result = await userCollection.updateOne(filter, updateDoc)
-                res.send(result);
+            const user = await userCollection.findOne({email:email})
+            const isAdmin = user.role === 'admin'
+            res.send({admin: isAdmin});
+        })
+        //make admin route
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: 'admin' },
             }
-            else {
-                res.status(403).send({ message: 'forbidden' })
-            }
-
+            const result = await userCollection.updateOne(filter, updateDoc)
+            res.send(result);
         })
         //create user using put method
         app.put('/user/:email', async (req, res) => {
