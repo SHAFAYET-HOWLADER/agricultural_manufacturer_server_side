@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const jwt = require('jsonwebtoken');
 //---------middleware------------//
-app.use(cors({origin:'https://final-project-13085.web.app'}));
+app.use(cors());
 app.use(express.json());
 app.get('/', (req, res) => {
     res.send('hello worlds ! ');
