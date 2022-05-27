@@ -153,6 +153,13 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+        //delete tools/products
+        app.delete('/tools/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await toolsCollection.deleteOne(query);
+            res.send(result);
+        })
         //get all orders
         app.get('/orders', async (req, res) => {
             const query = {};
@@ -161,7 +168,7 @@ async function run() {
             res.send(result);
         })
         //post tools in db 
-        app.post('/tools',async (req, res) => {
+        app.post('/tools', async (req, res) => {
             const newTools = req.body;
             const result = await toolsCollection.insertOne(newTools);
             res.send(result);
@@ -177,11 +184,11 @@ async function run() {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
-        app.get('/admin/:email',async (req,res)=>{
+        app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
-            const user = await userCollection.findOne({email:email})
+            const user = await userCollection.findOne({ email: email })
             const isAdmin = user.role === 'admin'
-            res.send({admin: isAdmin});
+            res.send({ admin: isAdmin });
         })
         //make admin route
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
