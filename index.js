@@ -89,9 +89,9 @@ async function run() {
             res.send(result);
         })
         //get selected product for payment
-        app.get('/orders/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email:email };
+        app.get('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
             const order = await ordersCollection.findOne(query);
             res.send(order)
         })
@@ -160,13 +160,6 @@ async function run() {
             const result = await toolsCollection.deleteOne(query);
             res.send(result);
         })
-        //delete user 
-        app.delete('/user/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) }
-            const users = await userCollection.deleteOne(query);
-            res.send(users);
-        })
         //get all orders
         app.get('/orders', async (req, res) => {
             const query = {};
@@ -191,7 +184,13 @@ async function run() {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
-
+        //delete user 
+        app.delete('/user/:id', async (req, res) => {
+            const id  = req.params.id;
+            const query = {_id: ObjectId(id)}
+            const users = await userCollection.deleteOne(query);
+            res.send(users);
+        })
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email })
