@@ -89,9 +89,9 @@ async function run() {
             res.send(result);
         })
         //get selected product for payment
-        app.get('/orders/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
+        app.get('/orders/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email:email };
             const order = await ordersCollection.findOne(query);
             res.send(order)
         })
