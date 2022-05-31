@@ -1,5 +1,4 @@
 const express = require("express");
-
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -161,6 +160,13 @@ async function run() {
             const result = await toolsCollection.deleteOne(query);
             res.send(result);
         })
+        //delete user 
+        app.delete('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const users = await userCollection.deleteOne(query);
+            res.send(users);
+        })
         //get all orders
         app.get('/orders', async (req, res) => {
             const query = {};
@@ -185,6 +191,7 @@ async function run() {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
+
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email })
