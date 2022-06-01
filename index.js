@@ -46,24 +46,23 @@ async function run() {
             if (requesterAccount.role === 'admin') {
                 next();
             }
-
             else {
                 res.status(403).send({ message: 'forbidden' })
             }
         }
-        //post profile info in db
+        //----------post profile info in db--------------//
         app.post('/profile', async (req, res) => {
             const userInfo = req.body;
             const profile = await profileCollection.insertOne(userInfo)
             res.send(profile);
         })
-        //find reviews collection from db
+        //----------find reviews collection from db------------//
         app.get('/profile', async (req, res) => {
             const query = {};
             const result = await profileCollection.find(query).toArray();
             res.send(result)
         })
-        //update profile
+        //--------------update profile----------------//
         app.put('/profile/:email', async (req, res) => {
             const email = req.params.email;
             const updatedProfile = req.body;
@@ -75,62 +74,25 @@ async function run() {
             const result = await profileCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
-        //find reviews collection from db
+        //---------------find reviews collection from db-----------------//
         app.get('/reviews', async (req, res) => {
             const query = {};
             const result = await reviewsCollection.find(query).toArray();
             res.send(result)
         })
-        //delete order
-        app.delete('/orders/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await ordersCollection.deleteOne(query);
+        //-------------get all orders-------------------//
+        app.get('/orders', async (req, res) => {
+            const query = {};
+            const cursor = ordersCollection.find(query);
+            const result = await cursor.toArray();
             res.send(result);
         })
-        //get selected product for payment
-        app.get('/orders/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const order = await ordersCollection.findOne(query);
+        //---------------get selected product for payment-----------------//
+        app.get('/orders', async (req, res) => {
+            const email = req.query.email;
+            const filter = { email: email };
+            const order = await ordersCollection.find(filter).toArray();
             res.send(order)
-        })
-        //post user's orders information
-        app.post('/orders', async (req, res) => {
-            const customer = req.body;
-            const query = {
-                productName: customer.product,
-                userName: customer.name,
-                userPhone: customer.phone
-            }
-            const exists = await ordersCollection.findOne(query);
-            if (exists) {
-                return res.send({ success: false, orders: exists });
-            }
-            const result = await ordersCollection.insertOne(customer);
-            return res.send({ success: true, result });
-        })
-
-        //find one
-        app.get('/tools/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const tool = await toolsCollection.findOne(query);
-            res.send(tool);
-        })
-        //paymentIntent
-        app.post('/create-payment-intent', async (req, res) => {
-            const product = req.body;
-            const price = product.price;
-            const amount = price * 100;
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount,
-                currency: 'usd',
-                payment_method_types: ['card']
-            });
-            res.send({
-                clientSecret: paymentIntent.client_secret
-            })
         })
         app.patch('/orders/:id', async (req, res) => {
             const id = req.params.id;
@@ -146,28 +108,67 @@ async function run() {
             const updatedOrder = await ordersCollection.updateOne(filter, updateDoc);
             res.send(updateDoc);
         })
-        //find all tools 
+        //-------------delete order-------------------//
+        app.delete('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await ordersCollection.deleteOne(query);
+            res.send(result);
+        })
+        //-----------------post user's orders information-----------------//
+        app.post('/orders', async (req, res) => {
+            const customer = req.body;
+            const query = {
+                productName: customer.product,
+                userName: customer.name,
+                userPhone: customer.phone
+            }
+            const exists = await ordersCollection.findOne(query);
+            if (exists) {
+                return res.send({ success: false, orders: exists });
+            }
+            const result = await ordersCollection.insertOne(customer);
+            return res.send({ success: true, result });
+        })
+
+        //----------------find one----------------------//
+        app.get('/tools/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const tool = await toolsCollection.findOne(query);
+            res.send(tool);
+        })
+        //----------------paymentIntent----------------------//
+        app.post('/create-payment-intent', async (req, res) => {
+            const product = req.body;
+            const price = product.price;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+        })
+
+        //----------------find all tools---------------//
         app.get('/tools', async (req, res) => {
             const query = {};
             const cursor = toolsCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
         })
-        //delete tools/products
+        //-----------------delete tools/products-------------------//
         app.delete('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await toolsCollection.deleteOne(query);
             res.send(result);
         })
-        //get all orders
-        app.get('/orders', async (req, res) => {
-            const query = {};
-            const cursor = ordersCollection.find(query);
-            const result = await cursor.toArray();
-            res.send(result);
-        })
-        //post tools in db 
+
+        //------------------post tools in db-------------------// 
         app.post('/tools', async (req, res) => {
             const newTools = req.body;
             const result = await toolsCollection.insertOne(newTools);
@@ -179,15 +180,15 @@ async function run() {
             const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
         })
-        //get all user
+        //-----------------get all user--------------------//
         app.get('/user', async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
-        //delete user 
+        //------------------delete user--------------------// 
         app.delete('/user/:id', async (req, res) => {
-            const id  = req.params.id;
-            const query = {_id: ObjectId(id)}
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
             const users = await userCollection.deleteOne(query);
             res.send(users);
         })
@@ -197,7 +198,7 @@ async function run() {
             const isAdmin = user.role === 'admin'
             res.send({ admin: isAdmin });
         })
-        //make admin route
+        //---------------make admin route-----------------//
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
@@ -207,7 +208,7 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc)
             res.send(result);
         })
-        //create user using put method
+        //-----------------create user using put method--------------------//
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
