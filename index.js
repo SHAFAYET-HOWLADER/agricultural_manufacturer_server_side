@@ -80,6 +80,17 @@ async function run() {
             const result = await reviewsCollection.find(query).toArray();
             res.send(result)
         })
+        app.get('/orders', async (req,res)=>{
+            const query = {};
+            const result = await ordersCollection.find(query).toArray();
+            res.send(result)
+        })
+        app.get('/orders', async (req,res)=>{
+            const email = req.query.email;
+            const filter = {email:email};
+            const result = await ordersCollection.find(filter).toArray();
+            res.send(result);
+        })
         app.patch('/orders/:id', async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
@@ -185,7 +196,7 @@ async function run() {
             res.send({ admin: isAdmin });
         })
         //---------------make admin route-----------------//
-        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
+        app.put('/user/admin/:email', async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
