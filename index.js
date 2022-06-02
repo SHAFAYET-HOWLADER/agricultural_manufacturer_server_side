@@ -80,20 +80,6 @@ async function run() {
             const result = await reviewsCollection.find(query).toArray();
             res.send(result)
         })
-        //-------------get all orders-------------------//
-        app.get('/orders', async (req, res) => {
-            const query = {};
-            const cursor = ordersCollection.find(query);
-            const result = await cursor.toArray();
-            res.send(result);
-        })
-        //---------------get selected product for payment-----------------//
-        app.get('/orders', async (req, res) => {
-            const email = req.query.email;
-            const filter = { email: email };
-            const order = await ordersCollection.find(filter).toArray();
-            res.send(order)
-        })
         app.patch('/orders/:id', async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
