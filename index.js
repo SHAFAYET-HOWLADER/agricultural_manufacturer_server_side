@@ -85,16 +85,18 @@ async function run() {
             const result = await ordersCollection.find(query).toArray();
             res.send(result)
         })
+
+        //get selected product for payment
+        app.get('/orders/:id',  async (req,res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await ordersCollection.findOne(query);
+            res.send(result);
+        })
         app.get('/orders', async (req,res)=>{
             const email = req.query.email;
             const filter = {email:email};
             const result = await ordersCollection.find(filter).toArray();
-            res.send(result)
-        })
-        app.delete('/orders/:id', async (req,res)=>{
-            const id  = req.params.id;
-            const query = {_id: ObjectId(id)};
-            const result = await ordersCollection.deleteOne(query);
             res.send(result)
         })
         app.get('/order', async (req,res)=>{
@@ -103,6 +105,13 @@ async function run() {
             const result = await ordersCollection.find(filter).toArray();
             res.send(result);
         })
+        app.delete('/orders/:id', async (req,res)=>{
+            const id  = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await ordersCollection.deleteOne(query);
+            res.send(result)
+        })
+
         app.patch('/orders/:id', async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
