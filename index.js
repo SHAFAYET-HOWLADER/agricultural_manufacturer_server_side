@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 app.use(cors());
 app.use(express.json());
 app.get('/', (req, res) => {
-    res.send('hello worlds ! ');
+    res.send('Hello server ! ');
 })
 const uri = `mongodb+srv://${process.env.toolsUser}:${process.env.toolsPass}@cluster0.ipzen.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
